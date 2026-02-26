@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GCM-Cardápio</title>
+    <link rel="stylesheet" href="style3.css">
+</head>
+<body>
+    <header class ="cabecalho">
+        <a href="#"class="logo">
+            <img src="logo-removebg-preview.png">
+        </a>
+        <nav class ="menu_navegacao">
+            <ul>
+                <li><a href="index3.html"id="marcao">Nossas pizzas</a></li>
+                <li><a href="index2.html">Home</a></li>
+                <li><a href="index.html">Perguntas frequentes</a></li>
+            </ul>
+        </nav>
+        <div class="carrinho-container">
+         <a href="index4.html" class="botao">🛒</a>
+         <span class="badge" id="contagem">0</span>
+
+        </div>
+    </header>
+    <div class="titulos">
+            <h3 class="titulo">Nossas pizzas</h3>
+        </div>
+    <main class="conteudo">
+       <section class="menu" id="container-pizzas">
+        
+       </section>
+    </main>
+     <footer class="rodape">
+        <div class="rodape-esquerda">
+            <img src="logo-removebg-preview.png">
+            <p id="copy">© COPYRIGHT 2017 - 2025 - GCM</p>
+        </div>
+        <div class="rodape_links">
+            <h4>LINKS</h4>
+            <nav>
+                <ul>
+                  <li><a href="index3.html">Nossas pizzas</a></li>
+                  <li><a href="index2.html">Home</a></li>
+                  <li><a href="index.html">Perguntas frequentes</a></li>
+                </ul>
+            </nav>
+        </div>
+         <a href="#" class="botao">BAIXE O APP</a>
+        <div class="redes_sociais">
+            <img src="https://png.pngtree.com/png-vector/20221018/ourmid/pngtree-whatsapp-phone-icon-png-image_6315989.png" class="logo_rs">
+            <a href="#" target="_blank">(87)9999-9999</a>
+            <img src="Instagram_icon.png.webp" class="logo_rs">
+            <a href="instagram.com/gcm" target="_blank">@GCM</a>
+        </div>
+    </footer>
+
+   <script>
+       const estado = {};
+       const container = document.getElementById('container-pizzas');
+
+
+        async function carregarCardapio() {
+            const res = await fetch("http://localhost:3000/pizzas");
+            const cardapio = await res.json();
+
+            container.innerHTML = ""; 
+
+            cardapio.forEach(pizza => {
+                estado[pizza.id] = { quantidade: 0, preco: pizza.preco };
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="header-img">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTAE5Ata9t6e7zjhZ_Kt7Ot7EGWi7U038jeuw&s" class="img-pizza">
+                    </div>
+                    <div class="corpo">
+                        <h2 class="titulo-corpo">${pizza.nome}</h2>
+                        <p class="descricao">Deliciosa pizza de ${pizza.nome}</p>
+                        <p class="preco">R$${pizza.preco},00</p>
+                        <div class="acoes">
+                            <button class="menos" onclick="alterarQtd(${pizza.id}, -1)">-</button>
+                            <span class="display" id="display-${pizza.id}">0</span>
+                            <button class="mais" onclick="alterarQtd(${pizza.id}, 1)">+</button>
+                            <button class="adicionar" onclick="adicionarAoCarrinho(${pizza.id},this)">Adicionar</button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function alterarQtd(id, delta) {
+            const novaQtd = estado[id].quantidade + delta;
+            if (novaQtd >= 0) {
+                estado[id].quantidade = novaQtd;
+                document.getElementById(`display-${id}`).textContent = novaQtd;
+            }
+        }
+
+        async function adicionarAoCarrinho(pizzaId,bntAdicionar) {
+            const { quantidade } = estado[pizzaId];
+            if (quantidade === 0) return alert("Selecione a quantidade");
+
+            await fetch("http://localhost:3000/pedidos", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ pizzaId, quantidade })
+            });
+            estado[pizzaId].quantidade = 0;
+            document.getElementById(`display-${pizzaId}`).textContent = 0;
+
+            atualizarBadge();
+
+            const textoOriginal=bntAdicionar.innerHTML;
+
+            bntAdicionar.classList.add("sucesso");
+            bntAdicionar.innerHTML="Adicionado";
+
+            setTimeout(()=>{
+                bntAdicionar.classList.remove("sucesso");
+                bntAdicionar.innerHTML=textoOriginal;
+            },2000)
+
+        }
+        async function atualizarBadge(){
+            const res= await fetch("http://localhost:3000/pedidos");
+            const pedidos= await res.json();
+
+            const totalItens=pedidos.reduce((acumulador,item)=>acumulador+item.quantidade,0);
+
+            const badge=document.getElementById("contagem");
+            badge.textContent=totalItens;
+
+            badge.style.display = totalItens > 0 ? "block" : "none";
+        }
+        atualizarBadge();
+        carregarCardapio();
+   </script>
+
+</body>
+</html>

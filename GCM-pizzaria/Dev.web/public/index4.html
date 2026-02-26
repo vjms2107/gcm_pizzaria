@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GCM</title>
+    <link rel="stylesheet" href="style4.css">
+</head>
+<body>
+    <header class ="cabecalho">
+        <a href="#"class="logo">
+            <img src="logo-removebg-preview.png">
+        </a>
+        <nav class ="menu_navegacao">
+            <ul>
+                <li><a href="index3.html">Nossas pizzas</a></li>
+                <li><a href="index2.html">Home</a></li>
+                <li><a href="index.html">Perguntas frequentes</a></li>
+            </ul>
+        </nav>
+        <a href="#" class="botao">🛒</a>
+    </header>
+    <div class="checkout">
+                <h1>Checkout</h1>
+                <a href="index3.html" class="botao">Voltar</a>
+    </div>
+    <main class="checkout-container">
+                <div class="carrinho" id="carrinho">
+                    <div id="lista-itens"></div>
+                    <div class="total">
+                        <strong>Total</strong>
+                        <span class="valor-total" id="valor">R$ 0,00</span>
+                    </div>
+                </div>
+
+                </div>
+                <div class="pagamento" id="pagamento">
+                   <h2>Forma de pagamento:</h2>
+                   <div class="forma-pagamento">
+                        <label class="opcao1">
+                            <input type="radio" name="pagamento" value="pix" class="input-pagamento">
+                            <span>Pix</span>
+                        </label>
+                        <label class="opcao1">
+                            <input type="radio" name="pagamento" value="credito" class="input-pagamento">
+                            <span>Crédito</span>
+                        </label>
+                   </div>
+                   <h2>Forma de entrega:</h2>
+                   <div class="opcoes">
+                    <label class="opcao2">
+                         <input type="radio" name="entrega" value="retirada"class="input-entrega">
+                         <span>Retirada</span>
+                    </label>
+                    <label class="opcao2">
+                         <input type="radio" name="entrega" value="delivery" class="input-entrega" id="delivery">
+                         <span>Delivery</span>
+                    </label>
+                   </div>
+                   <div class="botao-fim"> 
+                    <a href="index5.html" class="botao-2">
+                        Finalizar
+                    </a>
+                   </div>
+                   <div id="bloco-endereco" style="display: none; margin-top: 10px;">
+                        <label>Endereço de Entrega:</label>
+                        <input type="text" id="endereco" placeholder="Rua, número, bairro..." style="width: 100%;">
+                    </div>
+                  
+                </div>
+    </main>
+    <footer class="rodape">
+        <div class="rodape-esquerda">
+            <img src="logo-removebg-preview.png">
+            <p id="copy">© COPYRIGHT 2017 - 2025 - GCM</p>
+        </div>
+        <div class="rodape_links">
+            <h4>LINKS</h4>
+            <nav>
+                <ul>
+                  <li><a href="index3.html">Nossas pizzas</a></li>
+                  <li><a href="index2.html">Home</a></li>
+                  <li><a href="index.html">Perguntas frequentes</a></li>
+                </ul>
+            </nav>
+        </div>
+        <a href="#" class="botao">BAIXE O APP</a>
+        <div class="redes_sociais">
+            <img src="https://png.pngtree.com/png-vector/20221018/ourmid/pngtree-whatsapp-phone-icon-png-image_6315989.png" class="logo_rs">
+            <a href="#" target="_blank">(87)9999-9999</a>
+            <img src="Instagram_icon.png.webp" class="logo_rs">
+            <a href="instagram.com/gcm" target="_blank">@GCM</a>
+        </div>
+    </footer>
+
+    <script>
+        const listaItens = document.getElementById("lista-itens");
+        async function carregarCarrinho() {
+            const res= await fetch("http://localhost:3000/pedidos");
+            const pedidos=await res.json();
+
+            listaItens.innerHTML="";
+
+            pedidos.forEach(pedido => {
+                const item = document.createElement('div');
+                
+                item.className = "item"; 
+
+                item.innerHTML = `
+                    <img src="https://cdn-icons-png.flaticon.com/512/3081/3081559.png" alt="Pizza">
+                    <span class="nome">${pedido.pizza}</span>
+                    <span class="preco">R$ ${pedido.subtotal},00</span>
+                    <span class="remover" onclick="removerItem(${pedido.id})">✕</span>
+                `;
+
+                listaItens.appendChild(item);
+            });
+            atualizarTotal();
+        }
+        async function removerItem(id) {
+            await fetch("/pedidos/"+id,{
+                method:"DELETE"
+            });            
+            carregarCarrinho();
+        }
+
+        async function atualizarTotal() {
+            const resposta= await fetch("/pedidos/total");
+            const dados = await resposta.json();
+
+            const valorTotal=document.getElementById("valor");
+            valorTotal.textContent=`R$ ${dados.total},00`;    
+        }
+        carregarCarrinho();
+
+        let pagamentoSelecionado="";
+        let entregaSelecionado="";
+
+        function configurarSelecao(){
+            const opcaoPagamento=document.querySelectorAll(".input-pagamento");
+            const opcaoEntrega=document.querySelectorAll(".input-entrega");
+            const divEndereco=document.querySelector('#bloco-endereco');
+
+            opcaoPagamento.forEach(botao=>{
+                botao.addEventListener('change',()=>{
+                    pagamentoSelecionado=botao.value;
+                    console.log("Pagamento escolhido: ",pagamentoSelecionado);
+                });
+            });
+            opcaoEntrega.forEach(botao=>{
+                botao.addEventListener("change",()=>{
+                    entregaSelecionado=botao.value;
+                    console.log("Entrega selecionada: ",entregaSelecionado);
+                    if(entregaSelecionado==="delivery"){
+                        divEndereco.style.display='block';
+                    }else{
+                        divEndereco.style.display='none';
+                        document.getElementById('endereco').value='';
+                    }
+                });
+            });
+        }
+        configurarSelecao();
+
+        const btnFinal=document.querySelector(".botao-2"); 
+
+        async function finalizarPedido(event) {
+            event.preventDefault();
+            console.log("1. Iniciando processo de finalização...");
+
+            if (!pagamentoSelecionado || !entregaSelecionado) {
+                console.warn("Parando: Pagamento ou Entrega não selecionados.");
+                return alert("Por favor, selecione uma forma de pagamento e entrega.");
+            }
+
+            const campoEndereco = document.getElementById('endereco').value;
+            if (entregaSelecionado === "delivery" && !campoEndereco) {
+                console.warn("Parando: Entrega selecionada mas endereço está vazio.");
+                return alert("Por favor digite seu endereço para entrega.");
+            }
+
+            console.log("2. Capturando itens do carrinho...");
+            const itensCarrinho = [];
+            
+            document.querySelectorAll('#carrinho .item').forEach(item => {
+                try {
+                    const nome = item.querySelector(".nome").textContent;
+                    const preco = item.querySelector(".preco").textContent;
+                    itensCarrinho.push({ nome, preco });
+                } catch (e) {
+                    console.error("Erro ao ler item do carrinho:", e);
+                }
+            });
+
+            const dadosPedidos = {
+                pagamento: pagamentoSelecionado,
+                entrega: entregaSelecionado,
+                endereco: entregaSelecionado === 'delivery' ? campoEndereco : "retirada no local",
+                itens: itensCarrinho,
+                data: new Date().toLocaleString() 
+            };
+
+            console.log("3. Enviando dados para o servidor:", dadosPedidos);
+
+            try {
+                const res = await fetch("http://localhost:3000/finalizar", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(dadosPedidos)
+                });
+
+                if (res.ok) {
+                    console.log("4. Servidor recebeu o pedido. Iniciando limpeza...");
+
+                    const lista = document.getElementById("lista-itens");
+                    if (lista) {
+                        lista.innerHTML = "";
+                        console.log("5. HTML do carrinho limpo com sucesso.");
+                    }
+
+                    document.getElementById("valor").textContent = "R$ 0,00";
+
+                    console.log("6. Enviando comando DELETE para o servidor...");
+                    await fetch("http://localhost:3000/pedidos", { method: "DELETE" });
+
+                    window.location.href = "index5.html";
+                } else {
+                    console.error("Erro no servidor: Status", res.status);
+                }
+            } catch (erro) {
+                console.error("7. Erro FATAL na comunicação:", erro);
+            }
+        }
+        configurarSelecao();
+        btnFinal.addEventListener("click",finalizarPedido);
+    </script>
+</body>
+</html>
