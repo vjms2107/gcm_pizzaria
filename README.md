@@ -26,14 +26,14 @@ O projeto é dividido em:
 
 ---
 
-## Estrutura do projeto
+## 📂 Estrutura do projeto
 
-GCM-Pizzaria/
-│
-├── backend/ → API da aplicação (Node.js + Express)
-├── public/ → Arquivos estáticos (HTML, CSS, JS)
-├── package.json
-└── README.md
+- GCM-Pizzaria/
+
+- backend/ → API da aplicação (Node.js + Express)
+- public/ → Arquivos estáticos (HTML, CSS, JS)
+- package.json
+- README.md
 
 
 ---
@@ -73,5 +73,4 @@ http://localhost:3000
 ## 📄 Licença
 
 Este projeto é de caráter acadêmico/educacional.
-## 📂 Estrutura do Projeto
 
